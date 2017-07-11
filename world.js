@@ -1,6 +1,7 @@
 // A project challenge from Eloquent JavaScript: http://eloquentjavascript.net/07_elife.html
 
 // define a world
+
 var plan = ["############################",
             "#      #    #      o      ##",
             "#                          #",
@@ -13,6 +14,7 @@ var plan = ["############################",
             "# o  #         o       ### #",
             "#    #                     #",
             "############################"];
+
 // fixed width and height with coordinate pairs.
 function Vector(x, y) {
   this.x = x;
@@ -156,3 +158,30 @@ World.prototype.checkDestination = function(action, vector) {
       return dest;
   }
 };
+
+function View(world, vector) {
+  this.world = world;
+  this.vector = vector;
+}
+
+// look method identifies coordinates and the character corresponding to an element there.
+View.prototype.look = function(dir) {
+  var target = this.vector.plus(directions[dir]);
+  if (this.world.grid.isInside(target))
+    return charFromElement(this.world.grid.get(target));
+  else
+    return "#";
+};
+View.prototype.findAll = function(ch) {
+  var found = [];
+  for (var dir in directions)
+    if (this.look(dir) == ch)
+      found.push(dir);
+  return found;
+};
+View.prototype.find = function(ch) {
+  var found = this.findAll(ch);
+  if (found.length == 0) return null;
+  return randomElement(found);
+};
+
