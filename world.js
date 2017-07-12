@@ -172,6 +172,8 @@ View.prototype.look = function(dir) {
   else
     return "#";
 };
+
+// findAll 
 View.prototype.findAll = function(ch) {
   var found = [];
   for (var dir in directions)
@@ -179,9 +181,33 @@ View.prototype.findAll = function(ch) {
       found.push(dir);
   return found;
 };
+
+// find
 View.prototype.find = function(ch) {
   var found = this.findAll(ch);
   if (found.length == 0) return null;
   return randomElement(found);
 };
 
+// dirPlus calculates relative directions
+function dirPlus(dir, n) {
+  var index = directionNames.indexOf(dir);
+  return directionNames[(index + n + 8) % 8];
+}
+
+// WallFollower
+function WallFollower() {
+  this.dir = "s";
+}
+
+// act method
+WallFollower.prototype.act = function(view) {
+  var start = this.dir;
+  if (view.look(dirPlus(this.dir, -3)) != " ")
+    start = this.dir = dirPlus(this.dir, -2);
+  while (view.look(this.dir) != " ") {
+    this.dir = dirPlus(this.dir, 1);
+    if (this.dir == start) break;
+  }
+  return {type: "move", direction: this.dir};
+};
