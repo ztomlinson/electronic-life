@@ -237,3 +237,56 @@ LifelikeWorld.prototype.letAct = function(critter, vector) {
       this.grid.set(vector, null);
   }
 };
+
+// Action types for critter entity
+
+// grow method
+actionTypes.grow = function(critter) {
+  critter.energy += 0.5;
+  return true;
+};
+
+// move method 
+actionTypes.move = function(critter, vector, action) {
+  var dest = this.checkDestination(action, vector);
+  // returns false if destination isn’t empty, critter lacks energy
+  if (dest == null ||
+      critter.energy <= 1 ||
+      this.grid.get(dest) != null)
+    return false;
+  // energy is used/tracked for critter movement
+  critter.energy -= 1;
+  this.grid.set(vector, null);
+  this.grid.set(dest, critter);
+  return true;
+};
+
+// eat method
+// destination must 1) not be empty & 2) provide something to consume
+actionTypes.eat = function(critter, vector, action) {
+  var dest = this.checkDestination(action, vector);
+  var atDest = dest != null && this.grid.get(dest);
+  if (!atDest || atDest.energy == null)
+    return false;
+  critter.energy += atDest.energy;
+  this.grid.set(dest, null);
+  return true;
+};
+
+// reproduce method
+actionTypes.reproduce = function(critter, vector, action) {
+  // creates new critter from origin character
+  var baby = elementFromChar(this.legend,
+                             critter.originChar);
+  var dest = this.checkDestination(action, vector);
+  // find energy level of baby
+  // test if parent energy is sufficient to reproduce
+  if (dest == null ||
+      critter.energy <= 2 * baby.energy ||
+      this.grid.get(dest) != null)
+    return false;
+  critter.energy -= 2 * baby.energy;
+  // send baby to valid/empty destination
+  this.grid.set(dest, baby);
+  return true;
+};
