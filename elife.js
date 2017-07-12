@@ -200,14 +200,40 @@ function WallFollower() {
   this.dir = "s";
 }
 
-// act method
+// act method | scans critter surroundings/environment to move towards empty squares
 WallFollower.prototype.act = function(view) {
   var start = this.dir;
   if (view.look(dirPlus(this.dir, -3)) != " ")
     start = this.dir = dirPlus(this.dir, -2);
   while (view.look(this.dir) != " ") {
     this.dir = dirPlus(this.dir, 1);
+    // prevents collisions
     if (this.dir == start) break;
   }
   return {type: "move", direction: this.dir};
+};
+
+// lifelikeWorld constructor
+// based on World prototype | overrides letAct method
+function LifelikeWorld(map, legend) {
+  World.call(this, map, legend);
+}
+LifelikeWorld.prototype = Object.create(World.prototype);
+
+var actionTypes = Object.create(null);
+
+// new letAct method
+// performs function actions stored in actionTypes object
+// checks if action is returned | finds corresponding handler function | verfies if returned true
+LifelikeWorld.prototype.letAct = function(critter, vector) {
+  var action = critter.act(new View(this, vector));
+  var handled = action &&
+    action.type in actionTypes &&
+    actionTypes[action.type].call(this, critter,
+                                  vector, action);
+  if (!handled) {
+    critter.energy -= 0.2;
+    if (critter.energy <= 0)
+      this.grid.set(vector, null);
+  }
 };
