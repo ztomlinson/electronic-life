@@ -222,7 +222,7 @@ LifelikeWorld.prototype = Object.create(World.prototype);
 
 var actionTypes = Object.create(null);
 
-// new letAct method
+// letAct method and handlers
 // performs function actions stored in actionTypes object
 // checks if action is returned | finds corresponding handler function | verfies if returned true
 LifelikeWorld.prototype.letAct = function(critter, vector) {
@@ -290,3 +290,57 @@ actionTypes.reproduce = function(critter, vector, action) {
   this.grid.set(dest, baby);
   return true;
 };
+
+// Populating world
+
+// plant method
+function Plant() {
+  // randomization prevents simultaneous reproduction in one turn
+  this.energy = 3 + Math.random() * 4;
+}
+
+Plant.prototype.act = function(view) {
+  // if plant reproduces, it moves into space
+  if (this.energy > 15) {
+    var space = view.find(" ");
+    if (space)
+      return {type: "reproduce", direction: space};
+  }
+  // if unable, it grows until level 20
+  if (this.energy < 20)
+    return {type: "grow"};
+};
+
+// plantEater method
+function PlantEater() {
+  this.energy = 20;
+}
+
+PlantEater.prototype.act = function(view) {
+  var space = view.find(" ");
+  if (this.energy > 60 && space)
+    return {type: "reproduce", direction: space};
+  var plant = view.find("*");
+  if (plant)
+    return {type: "eat", direction: plant};
+  if (space)
+    return {type: "move", direction: space};
+};
+
+var valley = new LifelikeWorld(
+  ["############################",
+   "#####                 ######",
+   "##   ***                **##",
+   "#   *##**         **  O  *##",
+   "#    ***     O    ##**    *#",
+   "#       O         ##***    #",
+   "#                 ##**     #",
+   "#   O       #*             #",
+   "#*          #**       O    #",
+   "#***        ##**    O    **#",
+   "##****     ###***       *###",
+   "############################"],
+  {"#": Wall,
+   "O": PlantEater,
+   "*": Plant}
+);
