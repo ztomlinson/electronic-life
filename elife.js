@@ -25,12 +25,6 @@ Vector.prototype.plus = function(other) {
   return new Vector(this.x + other.x, this.y + other.y);
 };
 
-// grid array
-var grid = ["top left",    "top middle",    "top right",
-            "bottom left", "bottom middle", "bottom right"];
-console.log(grid[2 + (1 * 3)]);
-// → bottom right
-
 // Grid object
 function Grid(width, height) {
   this.space = new Array(width * height);
@@ -124,8 +118,31 @@ World.prototype.toString = function() {
 
 function Wall() {}
 
-// turn method tracks movement of critter entities
+var world = new World(plan, {"#": Wall,
+                             "o": BouncingCritter});
+//   #      #    #      o      ##
+//   #                          #
+//   #          #####           #
+//   ##         #   #    ##     #
+//   ###           ##     #     #
+//   #           ###      #     #
+//   #   ####                   #
+//   #   ##       o             #
+//   # o  #         o       ### #
+//   #    #                     #
+//   ############################
 
+Grid.prototype.forEach = function(f, context) {
+  for (var y = 0; y < this.height; y++) {
+    for (var x = 0; x < this.width; x++) {
+      var value = this.space[x + y * this.width];
+      if (value != null)
+        f.call(context, value, new Vector(x, y));
+    }
+  }
+};
+
+// turn method tracks movement of critter entities
 World.prototype.turn = function() {
   var acted = [];
   this.grid.forEach(function(critter, vector) {
@@ -137,7 +154,6 @@ World.prototype.turn = function() {
 };
 
 // letAct method provides logic of critter movement
-
 World.prototype.letAct = function(critter, vector) {
   var action = critter.act(new View(this, vector));
   if (action && action.type == "move") {
